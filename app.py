@@ -74,15 +74,59 @@
 
 #CHATGPT
 import streamlit as st
+import joblib
 import numpy as np
 import re
 import pandas as pd
+import nltk
+nltk.download('stopwords') 
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
+# Custom CSS for background and text
+st.markdown("""
+    <style>
+    /* Background color for entire app */
+     .stApp {
+    background-image: url("https://www.azoai.com/images/news/ImageForNews_2250_17031242031341781.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
+
+    /* Title styling */
+    h1 {
+        color: red; /* dark blue title */
+        text-align: center;
+        font-family: 'Trebuchet MS', sans-serif;
+    }
+
+    /* Button styling */
+    div.stButton > button {
+        background-color: black;
+        color: yellow;
+        border-radius: 10px;
+        height: 3em;
+        width: 10em;
+        font-weight: bold;
+    }
+
+    div.stButton > button:hover {
+        background-color: red;
+        color: white;
+    }
+
+    /* Text area styling */
+    textarea {
+        border: 2px solid #1f4e79;
+        border-radius: 10px;
+        background-color: red;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- UI Title ---
 st.title("📰 Fake News Detector")
