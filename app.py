@@ -73,6 +73,7 @@
 #     st.error(f"❌ Error loading CSV: {e}")
 
 #CHATGPT
+import os
 import streamlit as st
 import joblib
 import numpy as np
@@ -81,30 +82,26 @@ import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 import nltk
-nltk.download('stopwords') 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
-# Custom CSS for background and text
+# Download stopwords
+nltk.download('stopwords')
+
+# --- Custom CSS for background and text ---
 st.markdown("""
     <style>
-    /* Background color for entire app */
-     .stApp {
-    background-image: url("https://www.azoai.com/images/news/ImageForNews_2250_17031242031341781.jpg");
-    background-size: cover;
-    background-position: center;
-}
-
-
-    /* Title styling */
+    .stApp {
+        background-image: url("https://www.azoai.com/images/news/ImageForNews_2250_17031242031341781.jpg");
+        background-size: cover;
+        background-position: center;
+    }
     h1 {
-        color: red; /* dark blue title */
+        color: red;
         text-align: center;
         font-family: 'Trebuchet MS', sans-serif;
     }
-
-    /* Button styling */
     div.stButton > button {
         background-color: black;
         color: yellow;
@@ -113,13 +110,10 @@ st.markdown("""
         width: 10em;
         font-weight: bold;
     }
-
     div.stButton > button:hover {
         background-color: red;
         color: white;
     }
-
-    /* Text area styling */
     textarea {
         border: 2px solid #1f4e79;
         border-radius: 10px;
@@ -132,21 +126,34 @@ st.markdown("""
 st.title("📰 Fake News Detector")
 st.write("This app predicts whether a news article is **Real** or **Fake**.")
 
-# --- Step 1: Load Data Safely ---
+# --- Step 1: Check Current Directory (Debug Info) ---
+print("Current working directory:", os.getcwd())
+print("Files in directory:", os.listdir())
+
+# --- Step 2: Load Dataset (Relative Path Fix) ---
 try:
     st.info("📂 Loading dataset...")
-    news_df = pd.read_csv(r'C:\Users\harman kaur makkad\Desktop\FNDAI\Fake-News-Detection-Machine-Learning-Scam-Detection-NLP\train.csv')
+
+    # ✅ Use relative path — works on Vercel & locally
+    dataset_path = os.path.join(os.path.dirname(__file__), "train.csv")
+
+    if not os.path.exists(dataset_path):
+        raise FileNotFoundError(f"train.csv not found in: {os.getcwd()}")
+
+    news_df = pd.read_csv(dataset_path)
     news_df = news_df.fillna(' ')
     news_df['content'] = news_df['author'] + ' ' + news_df['title']
+
     st.success("✅ Dataset loaded successfully!")
 except Exception as e:
     st.error(f"❌ Failed to load dataset: {e}")
     st.stop()
 
-# --- Step 2: Preprocessing ---
+# --- Step 3: Preprocessing ---
 st.info("⚙️ Processing text data...")
 
 ps = PorterStemmer()
+
 def stemming(content):
     stemmed_content = re.sub('[^a-zA-Z]', ' ', content)
     stemmed_content = stemmed_content.lower().split()
@@ -160,7 +167,7 @@ except Exception as e:
     st.error(f"❌ Error during preprocessing: {e}")
     st.stop()
 
-# --- Step 3: TF-IDF and Model Training ---
+# --- Step 4: TF-IDF and Model Training ---
 try:
     st.info("📊 Training the model (please wait)...")
     X = news_df['content'].values
@@ -175,7 +182,7 @@ except Exception as e:
     st.error(f"❌ Model training failed: {e}")
     st.stop()
 
-# --- Step 4: Prediction Interface ---
+# --- Step 5: Prediction Interface ---
 st.subheader("🔍 Check News Authenticity")
 
 input_text = st.text_area("Enter a news article or headline here:")
@@ -190,4 +197,5 @@ if st.button("Predict"):
             st.error("🚨 The News is **Fake**.")
         else:
             st.success("✅ The News is **Real**.")
+
 
